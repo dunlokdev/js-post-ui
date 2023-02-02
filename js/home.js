@@ -1,5 +1,10 @@
+import dayjs from 'dayjs';
 import postApi from './api/postApi';
-import { setTextContent } from './utils';
+import { setTextContent, truncateText } from './utils';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+// to use fromNow function
+dayjs.extend(relativeTime);
 
 function createPostElement(post) {
   if (!post) return;
@@ -15,8 +20,9 @@ function createPostElement(post) {
   // const titleElement = liElement.querySelector('[data-id=title]');
   // if (titleElement) titleElement.textContent = post.title;
   setTextContent(liElement, '[data-id=title]', post.title);
-  setTextContent(liElement, '[data-id=description]', post.description);
+  setTextContent(liElement, '[data-id=description]', truncateText(post.description, 100));
   setTextContent(liElement, '[data-id=author]', post.author);
+  setTextContent(liElement, '[data-id=timeSpan]', ` - ${dayjs(post.updatedAt).fromNow()}`);
 
   /*  const descElement = liElement.querySelector('[data-id=description]');
   if (descElement) descElement.textContent = post.description;
@@ -25,7 +31,13 @@ function createPostElement(post) {
   if (authorElement) authorElement.textContent = post.author; */
 
   const thumbnailElement = liElement.querySelector('[data-id=thumbnail]');
-  if (thumbnailElement) thumbnailElement.src = post.imageUrl;
+  if (thumbnailElement) {
+    thumbnailElement.src = post.imageUrl;
+
+    thumbnailElement.addEventListener('error', () => {
+      thumbnailElement.src = 'https://via.placeholder.com/1368x400?text=Thumbnail';
+    });
+  }
 
   // attach event
   return liElement;
