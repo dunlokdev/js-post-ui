@@ -1,5 +1,4 @@
 import postApi from './api/postApi'
-import axiosClient from './api/postApi'
 
 console.log('Hello from main.js')
 
@@ -13,9 +12,8 @@ async function main() {
       _limit: 5,
     }
     const data = await postApi.getAll(queryParam)
-    console.log('🚀 ~ file: main.js:16 ~ main ~ data', data)
   } catch (error) {
-    console.log(error)
+    console.log('🚀 ~ file: main.js:17 ~ main ~ error', error)
   }
 }
 
