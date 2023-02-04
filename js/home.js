@@ -107,15 +107,35 @@ function initUrl() {
   window.history.pushState({}, '', url);
 }
 
+function renderPagination(pagination) {
+  const ulElement = document.getElementById('pagination');
+  if (!pagination || !ulElement) return;
+
+  // calc totalPages
+  const { _page, _limit, _totalRows } = pagination;
+  const totalPages = Math.ceil(_totalRows / _limit);
+
+  // save page and totalPages to ul pagination
+  ulElement.dataset.page = _page;
+  ulElement.dataset.totalPages = totalPages;
+
+  // check if enable or disable of prev/nextLink
+  if (_page <= 1) ulElement.firstElementChild?.classList.add('disabled');
+  else ulElement.firstElementChild?.classList.remove('disabled');
+
+  if (_page >= totalPages) ulElement.lastElementChild?.classList.add('disabled');
+  else ulElement.lastElementChild?.classList.remove('disabled');
+}
+
 (async () => {
   try {
     initPagination();
     initUrl(); // set default query param if not existed
     const queryParams = new URLSearchParams(window.location.search);
-    console.log(queryParams.toString());
 
     const { data, pagination } = await postApi.getAll(queryParams);
     renderPostList(data);
+    renderPagination(pagination);
   } catch (error) {
     console.log('Get all failed, ', error);
   }
