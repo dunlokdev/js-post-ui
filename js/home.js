@@ -147,17 +147,6 @@ function initPagination() {
   }
 }
 
-function initUrl() {
-  console.log('Init default url pagination');
-  const url = new URL(window.location);
-
-  // update search params if needed
-  if (!url.searchParams.get('_page')) url.searchParams.set('_page', 1);
-  if (!url.searchParams.get('_limit')) url.searchParams.set('_limit', 6);
-
-  window.history.pushState({}, '', url);
-}
-
 function initSearch() {
   const searchInput = document.getElementById('searchInput');
 
@@ -178,17 +167,23 @@ function initSearch() {
 
 (async () => {
   try {
+    const url = new URL(window.location);
+
+    // update search params if needed
+    if (!url.searchParams.get('_page')) url.searchParams.set('_page', 1);
+    if (!url.searchParams.get('_limit')) url.searchParams.set('_limit', 6);
+
+    window.history.pushState({}, '', url);
+    const queryParams = url.searchParams;
+    console.log('🚀 Init page ~ queryParams', queryParams.toString());
+
     // attach click event for links
     initPagination();
 
     // filter search
     initSearch();
-    // set default query param if not existed
-    initUrl();
 
     // render post list based URL params
-    const queryParams = new URLSearchParams(window.location.search);
-    console.log('🚀 Init page ~ queryParams', queryParams.toString());
     const { data, pagination } = await postApi.getAll(queryParams);
     renderPostList(data);
     renderPagination(pagination);
