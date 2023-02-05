@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import postApi from './api/postApi';
 import { getUlPaginationElement, setTextContent, truncateText } from './utils';
+import debounce from 'lodash.debounce';
 
 // to use fromNow function
 dayjs.extend(relativeTime);
@@ -47,7 +48,7 @@ function createPostElement(post) {
 }
 
 function renderPostList(postList) {
-  if (!Array.isArray(postList) || postList.length === 0) return;
+  if (!Array.isArray(postList)) return;
 
   const ulElement = document.getElementById('postList');
   if (!ulElement) return;
@@ -84,15 +85,24 @@ function renderPagination(pagination) {
 }
 
 async function handleFilterChange(filterName, filterValue) {
-  const url = new URL(window.location);
-  url.searchParams.set(filterName, filterValue);
+  try {
+    const url = new URL(window.location);
+    url.searchParams.set(filterName, filterValue);
 
-  // update query params
-  window.history.pushState({}, '', url);
+    // reset _page if needed
+    if (filterName === 'title_like') {
+      url.searchParams.set('_page', 1);
+    }
 
-  const { data, pagination } = await postApi.getAll(url.searchParams);
-  renderPostList(data);
-  renderPagination(pagination);
+    // update query params
+    window.history.pushState({}, '', url);
+
+    const { data, pagination } = await postApi.getAll(url.searchParams);
+    renderPostList(data);
+    renderPagination(pagination);
+  } catch (error) {
+    console.log('failed to fetch post list', error);
+  }
 }
 
 function handlePrevClick(e) {
@@ -148,12 +158,37 @@ function initUrl() {
   window.history.pushState({}, '', url);
 }
 
+function initSearch() {
+  const searchInput = document.getElementById('searchInput');
+
+  if (!searchInput) return;
+
+  // set default value from query params
+  const queryParams = new URLSearchParams(window.location.search);
+  if (queryParams.get('title_like')) {
+    searchInput.value = queryParams.get('title_like');
+  }
+  const debounceSearch = debounce(
+    (event) => handleFilterChange('title_like', event.target.value),
+    500
+  );
+
+  searchInput.addEventListener('input', debounceSearch);
+}
+
 (async () => {
   try {
+    // attach click event for links
     initPagination();
-    initUrl(); // set default query param if not existed
-    const queryParams = new URLSearchParams(window.location.search);
 
+    // filter search
+    initSearch();
+    // set default query param if not existed
+    initUrl();
+
+    // render post list based URL params
+    const queryParams = new URLSearchParams(window.location.search);
+    console.log('🚀 Init page ~ queryParams', queryParams.toString());
     const { data, pagination } = await postApi.getAll(queryParams);
     renderPostList(data);
     renderPagination(pagination);
