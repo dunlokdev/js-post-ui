@@ -35,6 +35,10 @@
   opacity: 1;
 }
 
+.posts-section .search-box {
+  width: 100%;
+}
+
 @media only screen and (min-width: 768px) {
   .posts-section .post-item .post-item-menu {
     transform: scale(0.5);
@@ -44,6 +48,9 @@
   .posts-section .post-item:hover .post-item-menu {
     transform: scale(1);
     opacity: 1;
+  }
+  .posts-section .search-box {
+    width: 500px;
   }
 }
 
